@@ -1,0 +1,5 @@
+language = "C"
+include_guard = "HTTPS_EVERYWHERE_LIB_CPP_H"
+
+[export]
+prefix = "C_"

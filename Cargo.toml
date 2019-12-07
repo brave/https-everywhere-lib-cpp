@@ -1,0 +1,24 @@
+[package]
+name = "https-everywhere-lib-cpp"
+version = "0.1.0"
+authors = ["Anton Lazarev <alazarev@brave.com>"]
+edition = "2018"
+description = "HTTPS Everywhere C++ FFI bindings"
+license = "MPL-2.0"
+repository = "https://github.com/brave/https-everywhere-lib-cpp"
+readme = "README.md"
+
+exclude = [ "/data/" ]
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+https-everywhere-lib-core = { git = "https://github.com/EFForg/https-everywhere-lib-core", default_features = false, features = ["rewriter", "potentially_applicable", "add_rulesets"] }
+libc = "0.2"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
