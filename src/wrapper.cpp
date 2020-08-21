@@ -18,8 +18,8 @@ void HttpsEverywhereClient::LoadRules(const std::string rules) {
 RewriteResult HttpsEverywhereClient::RewriteUrl(const std::string url) const {
   const auto c_result = rewriter_rewrite_url(client_ptr_, url.c_str());
   return {
-    action: (RewriteAction) c_result.action,
-    new_url: std::string(c_result.new_url),
+    .action = (RewriteAction) c_result.action,
+    .new_url = std::string(c_result.new_url),
   };
 }
 

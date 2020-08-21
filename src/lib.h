@@ -17,6 +17,7 @@ typedef enum {
 
 /**
  * Main struct accessible as a pointer across the FFI.
+ *
  * `rewriter` is `None` until rules have been added for initialization.
  */
 typedef struct C_HttpseClient C_HttpseClient;
@@ -31,7 +32,9 @@ typedef struct {
 
 /**
  * Initializes the `HttpseClient` with a set of rules, in JSON format.
+ *
  * The rules are in the same format as the `rulesets` key of the EFF's official lists.
+ *
  * # Safety
  * This function will cause undefined behavior if `client` or `rules` do not point to properly
  * initialized memory.
@@ -45,6 +48,7 @@ C_HttpseClient *new_client(void);
 
 /**
  * Use the `HttpseClient` to rewrite the given URL according to any applicable rules.
+ *
  * # Safety
  * This function will cause undefined behavior if `client` or `url` do not point to properly
  * initialized memory.
