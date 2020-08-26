@@ -8,6 +8,7 @@ use https_everywhere_lib_core::{
     rewriter::RewriteAction,
     Rewriter,
     rulesets::RuleSets,
+    settings::Settings,
 };
 
 /// Main struct accessible as a pointer across the FFI.
@@ -35,10 +36,10 @@ pub extern "C" fn new_client() -> *mut HttpseClient {
 pub unsafe extern "C" fn initialize_client(client: *mut HttpseClient, rules: *const c_char) {
     let rules = CStr::from_ptr(rules).to_str().expect("Convert url to str");
     let mut rulesets = RuleSets::new();
-    rulesets.add_all_from_json_string(rules, &false, &HashMap::new(), &None);
+    rulesets.add_all_from_json_string(rules, false, &HashMap::new(), &None);
     let rulesets = Arc::new(Mutex::new(rulesets));
-    let storage = Arc::new(Mutex::new(FixedSettings));
-    (*client).rewriter = Some(Rewriter::new(rulesets, storage));
+    let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(FixedSettings)))));
+    (*client).rewriter = Some(Rewriter::new(rulesets, settings));
 }
 
 /// Use the `HttpseClient` to rewrite the given URL according to any applicable rules.
@@ -52,7 +53,7 @@ pub unsafe extern "C" fn rewriter_rewrite_url(
     url: *const c_char,
 ) -> RewriteResult {
     let client = Box::leak(Box::from_raw(client));
-    if let Some(rewriter) = client.rewriter.as_ref() {
+    if let Some(rewriter) = client.rewriter.as_mut() {
         let url = CStr::from_ptr(url)
             .to_str()
             .expect("Convert url Cstr to str");
@@ -100,6 +101,10 @@ impl From<Result<RewriteAction, Box<dyn Error>>> for RewriteResult {
                     .expect("Create new CString")
                     .into_raw(),
             },
+            Ok(RewriteAction::RedirectLoopWarning) => RewriteResult {
+                action: RewriteActionEnum::NoOp,
+                new_url: CString::default().into_raw(),
+            },
             Err(e) => {
                 eprintln!("Failed to rewrite url: {}", e);
                 RewriteResult {
@@ -144,10 +149,10 @@ mod tests {
         let mut client = HttpseClient::default();
 
         let mut rulesets = RuleSets::new();
-        rulesets.add_all_from_json_string(&rules, &false, &HashMap::new(), &None);
+        rulesets.add_all_from_json_string(&rules, false, &HashMap::new(), &None);
         let rulesets = Arc::new(Mutex::new(rulesets));
-        let storage = Arc::new(Mutex::new(FixedSettings));
-        client.rewriter = Some(Rewriter::new(rulesets, storage));
+        let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(FixedSettings)))));
+        client.rewriter = Some(Rewriter::new(rulesets, settings));
 
         let action = client
             .rewriter
@@ -164,6 +169,9 @@ mod tests {
             }
             RewriteAction::RewriteUrl(s) => {
                 assert_eq!(s, "https://01.org/")
+            }
+            RewriteAction::RedirectLoopWarning => {
+                panic!("Should not be RedirectLoopWarning")
             }
         }
     }
@@ -174,10 +182,10 @@ mod tests {
         let mut client = HttpseClient::default();
 
         let mut rulesets = RuleSets::new();
-        rulesets.add_all_from_json_string(&rules, &false, &HashMap::new(), &None);
+        rulesets.add_all_from_json_string(&rules, false, &HashMap::new(), &None);
         let rulesets = Arc::new(Mutex::new(rulesets));
-        let storage = Arc::new(Mutex::new(FixedSettings));
-        client.rewriter = Some(Rewriter::new(rulesets, storage));
+        let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(FixedSettings)))));
+        client.rewriter = Some(Rewriter::new(rulesets, settings));
 
         let action = client
             .rewriter
@@ -194,6 +202,9 @@ mod tests {
             }
             RewriteAction::RewriteUrl(s) => {
                 assert_eq!(s, "https://01.org/")
+            }
+            RewriteAction::RedirectLoopWarning => {
+                panic!("Should not be RedirectLoopWarning")
             }
         }
     }

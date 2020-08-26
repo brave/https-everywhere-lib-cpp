@@ -14,7 +14,7 @@ exclude = [ "/data/" ]
 crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
-https-everywhere-lib-core = { git = "https://github.com/EFForg/https-everywhere-lib-core", default_features = false, features = ["rewriter", "potentially_applicable", "add_rulesets"], rev = "cba72c6a04ba3ee45a2314354298f5b0972d8880" }
+https-everywhere-lib-core = { git = "https://github.com/EFForg/https-everywhere-lib-core", default_features = false, features = ["rewriter", "potentially_applicable", "add_rulesets"], rev = "8157ca5c804d83d99031f91cfd8e288fda96a8c7" }
 libc = "0.2"
 
 [profile.dev]
