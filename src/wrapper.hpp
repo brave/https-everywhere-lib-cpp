@@ -41,7 +41,7 @@ class HTTPSE_EXPORT HttpsEverywhereClient {
  public:
   HttpsEverywhereClient();
   ~HttpsEverywhereClient();
-  void LoadRules(const std::string rules);
+  bool LoadRules(const std::string rules);
   RewriteResult RewriteUrl(std::string url) const;
  private:
   C_HttpseClient* client_ptr_;

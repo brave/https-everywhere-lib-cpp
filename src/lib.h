@@ -35,11 +35,13 @@ typedef struct {
  *
  * The rules are in the same format as the `rulesets` key of the EFF's official lists.
  *
+ * Returns whether or not the operation was successful.
+ *
  * # Safety
  * This function will cause undefined behavior if `client` or `rules` do not point to properly
  * initialized memory.
  */
-void initialize_client(C_HttpseClient *client, const char *rules);
+bool initialize_client(C_HttpseClient *client, const char *rules);
 
 /**
  * Creates a new HttpseClient for use across the FFI.

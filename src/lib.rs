@@ -29,17 +29,28 @@ pub extern "C" fn new_client() -> *mut HttpseClient {
 ///
 /// The rules are in the same format as the `rulesets` key of the EFF's official lists.
 ///
+/// Returns whether or not the operation was successful.
+///
 /// # Safety
 /// This function will cause undefined behavior if `client` or `rules` do not point to properly
 /// initialized memory.
 #[no_mangle]
-pub unsafe extern "C" fn initialize_client(client: *mut HttpseClient, rules: *const c_char) {
-    let rules = CStr::from_ptr(rules).to_str().expect("Convert url to str");
-    let mut rulesets = RuleSets::new();
-    rulesets.add_all_from_json_string(rules, false, &HashMap::new(), &None);
-    let rulesets = Arc::new(Mutex::new(rulesets));
-    let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(FixedSettings)))));
-    (*client).rewriter = Some(Rewriter::new(rulesets, settings));
+pub unsafe extern "C" fn initialize_client(client: *mut HttpseClient, rules: *const c_char) -> bool {
+    let rules = CStr::from_ptr(rules).to_str().expect("Convert rules CStr to str");
+    match serde_json::from_str(rules) {
+        Ok(parsed_rulesets) => {
+            let mut rulesets = RuleSets::new();
+            rulesets.add_all_from_serde_value(parsed_rulesets, false, &HashMap::new(), &None);
+            let rulesets = Arc::new(Mutex::new(rulesets));
+            let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(FixedSettings)))));
+            (*client).rewriter = Some(Rewriter::new(rulesets, settings));
+        }
+        Err(e) => {
+            eprintln!("Error parsing HTTPS Everywhere rulesets: {}", e);
+            return false;
+        }
+    }
+    return true;
 }
 
 /// Use the `HttpseClient` to rewrite the given URL according to any applicable rules.
@@ -56,7 +67,7 @@ pub unsafe extern "C" fn rewriter_rewrite_url(
     if let Some(rewriter) = client.rewriter.as_mut() {
         let url = CStr::from_ptr(url)
             .to_str()
-            .expect("Convert url Cstr to str");
+            .expect("Convert url CStr to str");
         rewriter.rewrite_url(url).into()
     } else {
         eprintln!("Attempted to access uninitialized HTTPSE client");

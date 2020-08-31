@@ -11,8 +11,8 @@ namespace httpse {
 HttpsEverywhereClient::HttpsEverywhereClient() : client_ptr_(new_client()) {}
 HttpsEverywhereClient::~HttpsEverywhereClient() {}
 
-void HttpsEverywhereClient::LoadRules(const std::string rules) {
-  initialize_client(client_ptr_, rules.c_str());
+bool HttpsEverywhereClient::LoadRules(const std::string rules) {
+  return initialize_client(client_ptr_, rules.c_str());
 }
 
 RewriteResult HttpsEverywhereClient::RewriteUrl(const std::string url) const {

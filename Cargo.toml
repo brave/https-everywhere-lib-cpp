@@ -15,6 +15,7 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
 https-everywhere-lib-core = { git = "https://github.com/EFForg/https-everywhere-lib-core", default_features = false, features = ["rewriter", "potentially_applicable", "add_rulesets"], rev = "8157ca5c804d83d99031f91cfd8e288fda96a8c7" }
+serde_json = "1.0"
 libc = "0.2"
 
 [profile.dev]
