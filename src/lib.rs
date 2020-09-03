@@ -5,10 +5,7 @@ use std::os::raw::c_char;
 use std::sync::{Arc, Mutex};
 
 use https_everywhere_lib_core::{
-    rewriter::RewriteAction,
-    Rewriter,
-    rulesets::RuleSets,
-    settings::Settings,
+    rewriter::RewriteAction, rulesets::RuleSets, settings::Settings, Rewriter,
 };
 
 /// Main struct accessible as a pointer across the FFI.
@@ -35,14 +32,21 @@ pub extern "C" fn new_client() -> *mut HttpseClient {
 /// This function will cause undefined behavior if `client` or `rules` do not point to properly
 /// initialized memory.
 #[no_mangle]
-pub unsafe extern "C" fn initialize_client(client: *mut HttpseClient, rules: *const c_char) -> bool {
-    let rules = CStr::from_ptr(rules).to_str().expect("Convert rules CStr to str");
+pub unsafe extern "C" fn initialize_client(
+    client: *mut HttpseClient,
+    rules: *const c_char,
+) -> bool {
+    let rules = CStr::from_ptr(rules)
+        .to_str()
+        .expect("Convert rules CStr to str");
     match serde_json::from_str(rules) {
         Ok(parsed_rulesets) => {
             let mut rulesets = RuleSets::new();
             rulesets.add_all_from_serde_value(parsed_rulesets, false, &HashMap::new(), &None);
             let rulesets = Arc::new(Mutex::new(rulesets));
-            let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(FixedSettings)))));
+            let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(
+                FixedSettings,
+            )))));
             (*client).rewriter = Some(Rewriter::new(rulesets, settings));
         }
         Err(e) => {
@@ -50,7 +54,7 @@ pub unsafe extern "C" fn initialize_client(client: *mut HttpseClient, rules: *co
             return false;
         }
     }
-    return true;
+    true
 }
 
 /// Use the `HttpseClient` to rewrite the given URL according to any applicable rules.
@@ -162,7 +166,9 @@ mod tests {
         let mut rulesets = RuleSets::new();
         rulesets.add_all_from_json_string(&rules, false, &HashMap::new(), &None);
         let rulesets = Arc::new(Mutex::new(rulesets));
-        let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(FixedSettings)))));
+        let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(
+            FixedSettings,
+        )))));
         client.rewriter = Some(Rewriter::new(rulesets, settings));
 
         let action = client
@@ -172,18 +178,10 @@ mod tests {
             .expect("Successful rewrite");
 
         match action {
-            RewriteAction::NoOp => {
-                panic!("Should not be NoOp")
-            }
-            RewriteAction::CancelRequest => {
-                panic!("Should not be CancelRequest")
-            }
-            RewriteAction::RewriteUrl(s) => {
-                assert_eq!(s, "https://01.org/")
-            }
-            RewriteAction::RedirectLoopWarning => {
-                panic!("Should not be RedirectLoopWarning")
-            }
+            RewriteAction::NoOp => panic!("Should not be NoOp"),
+            RewriteAction::CancelRequest => panic!("Should not be CancelRequest"),
+            RewriteAction::RewriteUrl(s) => assert_eq!(s, "https://01.org/"),
+            RewriteAction::RedirectLoopWarning => panic!("Should not be RedirectLoopWarning"),
         }
     }
 
@@ -195,7 +193,9 @@ mod tests {
         let mut rulesets = RuleSets::new();
         rulesets.add_all_from_json_string(&rules, false, &HashMap::new(), &None);
         let rulesets = Arc::new(Mutex::new(rulesets));
-        let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(FixedSettings)))));
+        let settings = Arc::new(Mutex::new(Settings::new(Arc::new(Mutex::new(
+            FixedSettings,
+        )))));
         client.rewriter = Some(Rewriter::new(rulesets, settings));
 
         let action = client
@@ -205,18 +205,10 @@ mod tests {
             .expect("Successful rewrite");
 
         match action {
-            RewriteAction::NoOp => {
-                panic!("Should not be NoOp")
-            }
-            RewriteAction::CancelRequest => {
-                panic!("Should not be CancelRequest")
-            }
-            RewriteAction::RewriteUrl(s) => {
-                assert_eq!(s, "https://01.org/")
-            }
-            RewriteAction::RedirectLoopWarning => {
-                panic!("Should not be RedirectLoopWarning")
-            }
+            RewriteAction::NoOp => panic!("Should not be NoOp"),
+            RewriteAction::CancelRequest => panic!("Should not be CancelRequest"),
+            RewriteAction::RewriteUrl(s) => assert_eq!(s, "https://01.org/"),
+            RewriteAction::RedirectLoopWarning => panic!("Should not be RedirectLoopWarning"),
         }
     }
 }
