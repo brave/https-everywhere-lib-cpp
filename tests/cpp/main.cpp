@@ -1,4 +1,4 @@
-#include "../../src/wrapper.hpp"
+#include "../../src/wrapper.h"
 #include <iostream>
 #include <string>
 #include <vector>

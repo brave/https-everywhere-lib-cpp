@@ -19,8 +19,8 @@ test: tests/cpp.out
 tests/cpp.out: target/debug/libhttps_everywhere_lib_cpp.a tests/wrapper.o tests/cpp/main.cpp
 	g++ $(CFLAGS) -std=gnu++0x tests/cpp/main.cpp tests/wrapper.o ./target/debug/libhttps_everywhere_lib_cpp.a -I ./src -lpthread -ldl -o tests/cpp.out
 
-tests/wrapper.o: src/lib.h src/wrapper.cpp src/wrapper.hpp
-	g++ $(CFLAGS) -std=gnu++0x src/wrapper.cpp -I src/ -c -o tests/wrapper.o
+tests/wrapper.o: src/lib.h src/wrapper.cc src/wrapper.h
+	g++ $(CFLAGS) -std=gnu++0x src/wrapper.cc -I src/ -c -o tests/wrapper.o
 
 target/debug/libhttps_everywhere_lib_cpp.a: src/lib.rs Cargo.toml
 	cargo build
